@@ -1,22 +1,25 @@
 import requests
+import os
 import pandas as pd
 import streamlit as st
 
-# Function to fetch file from a public GitHub repository
+# Function to fetch file from GitHub
 def fetch_file_from_github(filepath, is_csv=True):
-    # Define public repo details
-    repo = "your_username/your_repository"  # Replace with your GitHub repo path
-    branch = "main"  # Replace with your branch name if it's not "main"
+    # Load GitHub token and repo details from Streamlit secrets
+    github_token = st.secrets["github"]["token"]
+    repo = st.secrets["github"]["repo"]
+    branch = st.secrets["github"]["branch"]
 
-    # Construct the raw file URL
+    # Construct the GitHub API URL
     file_url = f"https://raw.githubusercontent.com/{repo}/{branch}/{filepath}"
+    headers = {"Authorization": f"token {github_token}"}
 
     # Fetch the file
-    response = requests.get(file_url)
+    response = requests.get(file_url, headers=headers)
 
     if response.status_code == 200:
         if is_csv:
-            # If the file is CSV, load it into a DataFrame
+            # If the file is CSV, load into a DataFrame
             data = pd.read_csv(filepath_or_buffer=response.content.decode('utf-8'))
             return data
         else:
